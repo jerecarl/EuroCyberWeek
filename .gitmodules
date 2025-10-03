@@ -1,0 +1,3 @@
+[submodule "webgoat"]
+	path = webgoat
+	url = git@github.com:WebGoat/WebGoat.git

@@ -16,3 +16,13 @@ variable "subscription_id" {
     error_message = "subscription_id must be a valid UUID format"
   }
 }
+
+variable "unique_suffix" {
+  type        = string
+  description = "A unique suffix to append to resource names to avoid naming conflicts"
+  default     = "12345" # Replace with your desired default or override via tfvars or environment variable
+  validation {
+    condition     = can(regex("^[a-z0-9]{1,10}$", var.unique_suffix))
+    error_message = "unique_suffix must be lowercase alphanumeric and up to 10 characters"
+  }
+}

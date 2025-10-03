@@ -81,4 +81,6 @@ resource "azurerm_application_gateway" "this" {
       tags
     ]
   }
+
+  depends_on = [ azurerm_subnet_network_security_group_association.appgw ]
 }
