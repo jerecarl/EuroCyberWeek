@@ -43,6 +43,7 @@ packages:
   - git
   - docker.io
   - kubectl
+  - git-lfs
 
 groups:
   - docker
@@ -60,13 +61,15 @@ write_files:
 runcmd:
   - systemctl enable docker
   - systemctl start docker
-  - echo "Substituting image placeholder in manifest"
-  - sed -i "s|{IMAGE}|${ACR_LOGIN_SERVER}/webgoat:latest|g" EuroCyberWeek/webgoat-app.yaml || echo "No placeholder found, continuing"
   - echo "Restarting AGIC pods"
   - kubectl --kubeconfig kubeconfig delete pod -n kube-system -l app=ingress-appgw || true
   - echo "Cloning EuroCyberWeek repository"
-  - git clone https://github.com/jerecarl/EuroCyberWeek.git
+  - git lfs install --system
+  - GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/jerecarl/EuroCyberWeek.git
   - cd EuroCyberWeek
+  - git lfs pull
+  - echo "Substituting image placeholder in manifest"
+  - sed -i "s|{IMAGE}|${ACR_LOGIN_SERVER}/webgoat:latest|g" webgoat-app.yaml || echo "No placeholder found, continuing"
   - echo "Loading WebGoat Docker image from archive"
   - docker load -i webgoat-docker-image.tar || echo "docker load failed"
   - echo "Logging into ACR ${ACR_LOGIN_SERVER}"
@@ -76,5 +79,5 @@ runcmd:
   - docker push ${ACR_LOGIN_SERVER}/webgoat:latest
   - cd /
   - echo "Applying WebGoat manifest"
-  - kubectl --kubeconfig kubeconfig apply -f EuroCyberWeek/webgoat-app.yaml
+  - kubectl --kubeconfig kubeconfig apply -f /EuroCyberWeek/webgoat-app.yaml
   - echo "Deployment complete"
