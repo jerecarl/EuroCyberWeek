@@ -1,3 +1,6 @@
+# Ignore large docker image archives (do not commit these)
+webgoat-docker-image.tar
+webgoat-docker-image.tar.gz
 # Local .terraform directories
 .terraform/
 
