@@ -7,3 +7,9 @@ az login
 terraform init
 terraform apply -var 'subscription_id=XXXX' -auto-approve
 ```
+
+## Export image
+
+```bash
+docker save -o webgoat-docker-image.tar webgoat/webgoat:latest
+```

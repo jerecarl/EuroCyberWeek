@@ -60,17 +60,21 @@ write_files:
 runcmd:
   - systemctl enable docker
   - systemctl start docker
-  - echo "Cloning EuroCyberWeek repository"
-  - git clone --recurse-submodules https://github.com/jerecarl/EuroCyberWeek.git
-  - echo "Logging into ACR ${ACR_LOGIN_SERVER}"
-  - echo ${ACR_PASSWORD} | docker login ${ACR_LOGIN_SERVER} -u ${ACR_USERNAME} --password-stdin
-  - echo "Building image ${ACR_LOGIN_SERVER}/webgoat:latest"
-  - docker build -t ${ACR_LOGIN_SERVER}/webgoat:latest EuroCyberWeek/webgoat
-  - docker push ${ACR_LOGIN_SERVER}/webgoat:latest
   - echo "Substituting image placeholder in manifest"
   - sed -i "s|{IMAGE}|${ACR_LOGIN_SERVER}/webgoat:latest|g" EuroCyberWeek/webgoat-app.yaml || echo "No placeholder found, continuing"
   - echo "Restarting AGIC pods"
   - kubectl --kubeconfig kubeconfig delete pod -n kube-system -l app=ingress-appgw || true
+  - echo "Cloning EuroCyberWeek repository"
+  - git clone https://github.com/jerecarl/EuroCyberWeek.git
+  - cd EuroCyberWeek
+  - echo "Loading WebGoat Docker image from archive"
+  - docker load -i webgoat-docker-image.tar || echo "docker load failed"
+  - echo "Logging into ACR ${ACR_LOGIN_SERVER}"
+  - echo ${ACR_PASSWORD} | docker login ${ACR_LOGIN_SERVER} -u ${ACR_USERNAME} --password-stdin
+  - echo "Tagging and pushing image to ${ACR_LOGIN_SERVER}/webgoat:latest"
+  - docker tag webgoat/webgoat:latest ${ACR_LOGIN_SERVER}/webgoat:latest
+  - docker push ${ACR_LOGIN_SERVER}/webgoat:latest
+  - cd /
   - echo "Applying WebGoat manifest"
   - kubectl --kubeconfig kubeconfig apply -f EuroCyberWeek/webgoat-app.yaml
   - echo "Deployment complete"
